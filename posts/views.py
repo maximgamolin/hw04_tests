@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from .forms import PostForm
 from .models import Group, Post
@@ -23,8 +24,15 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()[:12]
-    return render(request, "group.html", {'group': group, 'posts': posts})
+    posts = Group.objects.all()
+    paginator = Paginator(posts, 10) 
+    page_number = request.GET.get('page') 
+    page = paginator.get_page(page_number) 
+    return render(request, "group.html", {
+        'group': group, 
+        'posts': posts,
+        'page': page,
+        })
 
 
 @login_required
@@ -44,15 +52,6 @@ def new_post(request):
     form = PostForm()
     return render(request, 'posts/new.html', {'form': form})
 
-
-# def profile(request, username):
-#     author = get_object_or_404(User, username=username)
-#     post_list = Post.objects.filter(author = author).all()
-#     post_count = post_list.count()
-#     paginator = Paginator(post_list, 10) 
-#     page_number = request.GET.get('page') 
-#     page = paginator.get_page(page_number) 
-#     return render(request,  'profile.html', {'page': page, 'profile': author, 'post_count': post_count})
 
 def profile(request, username: str):
     author = get_object_or_404(User, username=username)
@@ -77,18 +76,12 @@ def post_view(request, username, post_id):
         'author': author
         })
 
-
-
 @login_required
 def post_edit(request, username, post_id):
     """
     Функция редактирования поста.
     Использует шаблон new.html.
     """
-    # тут тело функции. Не забудьте проверить, 
-    # что текущий пользователь — это автор записи.
-    # В качестве шаблона страницы редактирования укажите шаблон создания новой записи
-    # который вы создали раньше (вы могли назвать шаблон иначе)
     sel_post = get_object_or_404(Post, id=post_id)
     sel_post_author = sel_post.author.username
     if username == sel_post_author:
