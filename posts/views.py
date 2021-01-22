@@ -24,7 +24,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = Group.objects.all()
+    posts = Post.objects.filter(group=group).all()
     paginator = Paginator(posts, 10) 
     page_number = request.GET.get('page') 
     page = paginator.get_page(page_number) 
@@ -62,7 +62,11 @@ def profile(request, username: str):
     if page:
         post = page[0]
     post = []
-    return render(request, 'profile.html', {"post": post, "author": author, "page": page})
+    return render(request, 'profile.html', {
+        "post": post, 
+        "author": author, 
+        "page": page
+        })
  
  
 def post_view(request, username, post_id):
@@ -93,4 +97,4 @@ def post_edit(request, username, post_id):
             return redirect("index")
         return render(request, "posts/new.html", {"form": form})
     else:
-        return redirect("new")
+        return redirect(post_view(request, username, post_id))
