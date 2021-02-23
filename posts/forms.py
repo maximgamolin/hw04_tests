@@ -11,3 +11,7 @@ class PostForm(forms.ModelForm):
             'text': 'Напишите что нибудь',
             'group': 'Группа'
             }
+        verbose = {
+            'text': 'Текст',
+            'group': 'Группа'
+        }
